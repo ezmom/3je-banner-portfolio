@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3je 私のまま稼ぐ診断 | Banner Portfolio</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0d0d;--card:#1a1a1a;--border:#2a2a2a;--text:#e0e0e0;--muted:#888;--accent:#E8838C;--accent2:#F5C6C2;--green:#4CAF50}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+/* Auth Gate */
+#auth-gate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px}
+#auth-gate h1{font-size:1.5rem;color:var(--accent)}
+#auth-gate input{padding:12px 20px;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;font-size:1rem;width:280px;text-align:center}
+#auth-gate button{padding:12px 40px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer}
+#auth-gate button:hover{opacity:0.9}
+#auth-gate .error{color:#ff4444;font-size:0.85rem;height:20px}
+/* Main */
+#app{display:none}
+header{padding:40px 20px;text-align:center;border-bottom:1px solid var(--border)}
+header h1{font-size:2rem;color:var(--accent);margin-bottom:8px}
+header .meta{color:var(--muted);font-size:0.85rem}
+header .stats{display:flex;gap:20px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+header .stat{background:var(--card);padding:8px 16px;border-radius:8px;font-size:0.9rem}
+header .stat b{color:var(--accent)}
+/* Tabs */
+.tabs{display:flex;justify-content:center;gap:8px;padding:20px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:1px solid var(--border)}
+.tab{padding:10px 24px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:0.9rem;transition:all .2s}
+.tab.active,.tab:hover{border-color:var(--accent);color:var(--accent);background:#1f1216}
+.tab-panel{display:none;padding:20px;max-width:1400px;margin:0 auto}
+.tab-panel.active{display:block}
+/* Hypothesis Card */
+.hypo-section{margin-bottom:48px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.hypo-header{background:var(--card);padding:20px;border-bottom:1px solid var(--border)}
+.hypo-header h3{color:var(--accent);font-size:1.1rem;margin-bottom:8px}
+.hypo-header .info{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;font-size:0.85rem;color:var(--muted)}
+.hypo-header .info span{background:var(--bg);padding:4px 10px;border-radius:4px}
+.hypo-header .info b{color:var(--text)}
+.hypo-header .hook-copy{margin-top:12px;padding:12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--accent);font-size:0.95rem;color:var(--accent2)}
+/* Banner Grid */
+.banner-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px}
+@media(max-width:900px){.banner-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.banner-grid{grid-template-columns:1fr}}
+.banner-card{background:var(--card);border-radius:8px;overflow:hidden;border:1px solid var(--border);transition:transform .2s}
+.banner-card:hover{transform:scale(1.02)}
+.banner-card img{width:100%;display:block;aspect-ratio:4/5;object-fit:cover}
+.banner-card .caption{padding:12px;font-size:0.8rem;color:var(--muted)}
+.banner-card .caption .headline{color:var(--text);font-size:0.85rem;margin-bottom:4px}
+/* Layer Summary */
+.layer-summary{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:32px}
+.layer-summary h2{color:var(--accent);margin-bottom:12px;font-size:1.2rem}
+.layer-summary p{color:var(--muted);font-size:0.9rem;margin-bottom:12px}
+.layer-summary table{width:100%;border-collapse:collapse;font-size:0.85rem}
+.layer-summary th{text-align:left;color:var(--accent);padding:8px;border-bottom:1px solid var(--border)}
+.layer-summary td{padding:8px;border-bottom:1px solid var(--border);color:var(--muted)}
+/* Footer */
+footer{text-align:center;padding:40px;color:var(--muted);font-size:0.8rem;border-top:1px solid var(--border)}
+/* Lightbox */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100;cursor:pointer;align-items:center;justify-content:center}
+#lightbox.show{display:flex}
+#lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px}
+</style>
+</head>
+<body>
+<!-- Auth Gate -->
+<div id="auth-gate">
+<h1>3je Banner Portfolio</h1>
+<p style="color:#888">閲覧にはパスワードが必要です</p>
+<input type="password" id="pw" placeholder="パスワード" onkeydown="if(event.key==='Enter')checkAuth()">
+<button onclick="checkAuth()">Enter</button>
+<div class="error" id="auth-error"></div>
+</div>
+
+<!-- Main App -->
+<div id="app">
+<header>
+<h1>私のまま稼ぐ診断</h1>
+<div class="meta">スリジェ（3je.net）| 女性向けキャリア診断 × LINE登録 | 2026-04-06</div>
+<div class="stats">
+<div class="stat"><b>4</b> 層</div>
+<div class="stat"><b>12</b> 仮説</div>
+<div class="stat"><b>36</b> バナー</div>
+<div class="stat"><b>4:5</b> (1080x1350)</div>
+<div class="stat">Gate-L1 <b style="color:var(--green)">ALL PASS</b></div>
+</div>
+</header>
+
+<div class="tabs">
+<div class="tab active" onclick="showTab('超潜在')">超潜在層<br><small>pain 2 / 自覚なし</small></div>
+<div class="tab" onclick="showTab('潜在')">潜在層<br><small>pain 5 / モヤモヤ</small></div>
+<div class="tab" onclick="showTab('準顕在')">準顕在層<br><small>pain 7 / 情報収集中</small></div>
+<div class="tab" onclick="showTab('顕在')">顕在層<br><small>pain 9 / 挫折経験</small></div>
+</div>
+
+<!-- 超潜在層 -->
+<div class="tab-panel active" id="tab-超潜在">
+<div class="layer-summary">
+<h2>超潜在層 — 「別に不満はない」けど、心のどこかで…</h2>
+<p>自覚なし。「これが大人ってこういうもの」と思っている。SNSで楽しそうな人を見て一瞬だけ「いいなぁ」と思うが、すぐ忘れる。この層にはまず「え、それ私のことだ」という知覚を生む必要がある。</p>
+<table>
+<tr><th>仮説</th><th>N1</th><th>コンセプト角度</th><th>フックタイプ</th><th>DNA骨格</th></tr>
+<tr><td>H-01</td><td>さおり(27)</td><td>日曜夜の違和感を言語化</td><td>BH2 疑問/問題提起</td><td>BN-E ライフスタイル</td></tr>
+<tr><td>H-02</td><td>ゆきな(25)</td><td>SNSの向こう側の可能性</td><td>BH7 UGC風</td><td>BN-C 口コミ風</td></tr>
+<tr><td>H-03</td><td>みく(26)</td><td>転職でも副業でもない第3の道</td><td>BH8 新常識提案</td><td>BN-G 常識否定</td></tr>
+</table>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-01 | さおり（27歳）一般事務 — 日曜夜の違和感</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> 感情的解放</span>
+<span><b>DNA:</b> BN-E ライフスタイル+オーバーレイ</span>
+<span><b>対比:</b> vs H-02（表現比較）</span>
+</div>
+<div class="hook-copy">「日曜の夜、ちょっとだけ憂鬱になる理由、知ってる？」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H01/banners/banner_01_daily_scene.png" onclick="openLB(this)"><div class="caption"><div class="headline">日曜の夜、ちょっとだけ憂鬱になる理由、知ってる？</div>V1: 日常シーンビジュアル重視</div></div>
+<div class="banner-card"><img src="./H01/banners/banner_02_text_dominant.png" onclick="openLB(this)"><div class="caption"><div class="headline">このまま、あと40年同じ毎日を繰り返すの？</div>V2: テキスト主体・コピー力全振り</div></div>
+<div class="banner-card"><img src="./H01/banners/banner_03_question_diagnosis.png" onclick="openLB(this)"><div class="caption"><div class="headline">なんとなく生きてるの、私だけ？</div>V3: 問いかけ型・診断誘導</div></div>
+</div>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-02 | ゆきな（25歳）営業アシスタント — SNSの向こう側</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> スキル不要×自己肯定</span>
+<span><b>DNA:</b> BN-C UGC/口コミ風</span>
+<span><b>対比:</b> vs H-01（表現比較）</span>
+</div>
+<div class="hook-copy">「26歳OLが、Instagramを閉じた後に見つけたもの」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H02/banners/H02-01.png" onclick="openLB(this)"><div class="caption"><div class="headline">いいね押した後に、ふと気づいた</div>V1: Instagramスクショ風</div></div>
+<div class="banner-card"><img src="./H02/banners/H02-02.png" onclick="openLB(this)"><div class="caption"><div class="headline">25歳、営業アシスタント。Instagramを閉じた後に見つけたもの</div>V2: 手書きノート風</div></div>
+<div class="banner-card"><img src="./H02/banners/H02-03.png" onclick="openLB(this)"><div class="caption"><div class="headline">ねえ、これやってみて！ 1分で終わるから</div>V3: LINEメッセージ風</div></div>
+</div>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-03 | みく（26歳）事務職 — 第3の選択肢</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> スキル不要×自己肯定</span>
+<span><b>DNA:</b> BN-G 常識否定×数字衝撃</span>
+<span><b>対比:</b> vs H-06（層間比較）</span>
+</div>
+<div class="hook-copy">「転職でも副業でもない。まず、自分を知る」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H03/banners/H03_v01.png" onclick="openLB(this)"><div class="caption"><div class="headline">転職でも副業でもない。まず、自分を知る</div>V1: 二択否定の視覚化</div></div>
+<div class="banner-card"><img src="./H03/banners/H03_v02.png" onclick="openLB(this)"><div class="caption"><div class="headline">周りが動き出した。私だけ何もしてない</div>V2: 同期の焦り描写</div></div>
+<div class="banner-card"><img src="./H03/banners/H03_v03.png" onclick="openLB(this)"><div class="caption"><div class="headline">転職も副業も、まだ早い</div>V3: 軽いトーンの提案型</div></div>
+</div>
+</div>
+</div>
+
+<!-- 潜在層 -->
+<div class="tab-panel" id="tab-潜在">
+<div class="layer-summary">
+<h2>潜在層 — 「モヤモヤしてるけど、何がしたいか分からない」</h2>
+<p>朝の通勤電車で「今日も同じ1日か」と思う。上司の顔色を伺いながら働く毎日。でも何がしたいかは分からない。この層には「モヤモヤの正体」を言語化し、「私のまま稼ぐ道がある」という新認知を植え付ける。</p>
+<table>
+<tr><th>仮説</th><th>N1</th><th>コンセプト角度</th><th>フックタイプ</th><th>DNA骨格</th></tr>
+<tr><td>H-04</td><td>まりこ(29)</td><td>モヤモヤの正体=自分を隠してる</td><td>BH2 疑問/問題提起</td><td>BN-E ライフスタイル</td></tr>
+<tr><td>H-05</td><td>さやか(30)</td><td>スキルがないのではなく知らないだけ</td><td>BH8 新常識提案</td><td>BN-G 常識否定</td></tr>
+<tr><td>H-06</td><td>あすか(28)</td><td>我慢して働くのは大人じゃない</td><td>BH2 疑問/問題提起</td><td>BN-E ライフスタイル</td></tr>
+</table>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-04 | まりこ（29歳）一般事務 — 通勤電車のモヤモヤ</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> 感情的解放</span>
+<span><b>DNA:</b> BN-E ライフスタイル+オーバーレイ</span>
+<span><b>対比:</b> vs H-05（コンセプト比較）</span>
+</div>
+<div class="hook-copy">「毎朝『同じ1日』が始まるのが、なぜ辛いか分かりますか？」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H04/banners/H04_H04-01.png" onclick="openLB(this)"><div class="caption"><div class="headline">毎朝「同じ1日」が始まるのが、なぜ辛いか分かりますか？</div>V1: 通勤シーン重視</div></div>
+<div class="banner-card"><img src="./H04/banners/H04_H04-02.png" onclick="openLB(this)"><div class="caption"><div class="headline">言えないモヤモヤ、抱えてませんか？</div>V2: モヤモヤ可視化</div></div>
+<div class="banner-card"><img src="./H04/banners/H04_H04-03.png" onclick="openLB(this)"><div class="caption"><div class="headline">自分を知っただけで、朝が変わった</div>V3: ビフォーアフター対比</div></div>
+</div>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-05 | さやか（30歳）事務職5年 — スキル不要宣言</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> スキル不要×自己肯定</span>
+<span><b>DNA:</b> BN-G 常識否定×数字衝撃</span>
+<span><b>対比:</b> vs H-04（コンセプト比較）</span>
+</div>
+<div class="hook-copy">「"何もできない"が口癖のあなたへ。それ、嘘です」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H05/banners/H05_banner_01_shock_copy.png" onclick="openLB(this)"><div class="caption"><div class="headline">「何もできない」が口癖のあなたへ。それ、嘘です。</div>V1: 衝撃コピー主体</div></div>
+<div class="banner-card"><img src="./H05/banners/H05_banner_02_bloom_visual.png" onclick="openLB(this)"><div class="caption"><div class="headline">あなたの中に、まだ気づいていない強みがある。</div>V2: 自己肯定の可視化</div></div>
+<div class="banner-card"><img src="./H05/banners/H05_banner_03_question_flow.png" onclick="openLB(this)"><div class="caption"><div class="headline">「得意なことは？」と聞かれて言葉に詰まったことがある人へ</div>V3: 問いかけ→診断誘導</div></div>
+</div>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-06 | あすか（28歳）接客業 — 我慢の解放</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> 感情的解放（我慢をやめる）</span>
+<span><b>DNA:</b> BN-E ライフスタイル+オーバーレイ</span>
+<span><b>対比:</b> vs H-03（層間比較）</span>
+</div>
+<div class="hook-copy">「我慢して働くのが大人？ それ、誰が決めた？」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H06/banners/H06_v1_cafe_liberation.png" onclick="openLB(this)"><div class="caption"><div class="headline">この時間だけ、私でいられる</div>V1: カフェシーンの解放感</div></div>
+<div class="banner-card"><img src="./H06/banners/H06_v2_dare_ga_kimeta.png" onclick="openLB(this)"><div class="caption"><div class="headline">我慢して働くのが大人？ それ、誰が決めた？</div>V2: 挑発コピー主体</div></div>
+<div class="banner-card"><img src="./H06/banners/H06_v3_gaman_vs_watashi.png" onclick="openLB(this)"><div class="caption"><div class="headline">毎日の「我慢」やめたら「私のまま」稼げた</div>V3: 我慢→解放の対比</div></div>
+</div>
+</div>
+</div>
+
+<!-- 準顕在層 -->
+<div class="tab-panel" id="tab-準顕在">
+<div class="layer-summary">
+<h2>準顕在層 — 「情報収集中。でもどれを選べばいいか分からない」</h2>
+<p>SHElikesやFammの広告を何度も見た。スクール比較で迷い中。でもスクール代が高くて踏み出せない。この層には「スキルより先に自分を知る」という新しい判断基準を付与する。</p>
+<table>
+<tr><th>仮説</th><th>N1</th><th>コンセプト角度</th><th>フックタイプ</th><th>DNA骨格</th></tr>
+<tr><td>H-07</td><td>あやか(31)</td><td>スクール選びの前に自分のタイプを</td><td>BH8 新常識提案</td><td>BN-G 常識否定</td></tr>
+<tr><td>H-08</td><td>れいな(32)</td><td>0円・1分・7問の究極低ハードル</td><td>BH1 数字衝撃</td><td>BN-A ヒーロー+数字</td></tr>
+<tr><td>H-09</td><td>かおり(29)</td><td>診断だから失敗しようがない</td><td>BH4 社会的証明</td><td>BN-C UGC風</td></tr>
+</table>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-07 | あやか（31歳）事務職 — スクール迷子への新基準</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> スキル不要×自己肯定</span>
+<span><b>DNA:</b> BN-G 常識否定×数字衝撃</span>
+<span><b>対比:</b> vs H-08（コンセプト比較）</span>
+</div>
+<div class="hook-copy">「スクール選びの前に、たった1つやるべきこと」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H07/banners/H07_v1_comparison_negation.png" onclick="openLB(this)"><div class="caption"><div class="headline">スクール選び、3つ目で止まってない？</div>V1: 比較リスト否定の視覚化</div></div>
+<div class="banner-card"><img src="./H07/banners/H07_v2_text_dominant.png" onclick="openLB(this)"><div class="caption"><div class="headline">比べても、答えは出ない。</div>V2: テキスト衝撃</div></div>
+<div class="banner-card"><img src="./H07/banners/H07_v3_diagnostic_experience.png" onclick="openLB(this)"><div class="caption"><div class="headline">1分で見つかる、私の稼ぎ方。</div>V3: 診断体験の可視化</div></div>
+</div>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-08 | れいな（32歳）営業事務 — 究極の低ハードル</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> 簡便性×低ハードル</span>
+<span><b>DNA:</b> BN-A ヒーロープロダクト+数字フック</span>
+<span><b>対比:</b> vs H-07（コンセプト比較）</span>
+</div>
+<div class="hook-copy">「0円。1分。7問。それだけで、あなたの稼ぎ方が分かる」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H08/banners/H08_v1_number_triple.png" onclick="openLB(this)"><div class="caption"><div class="headline">0円。1分。7問。</div>V1: 数字3連打</div></div>
+<div class="banner-card"><img src="./H08/banners/H08_v2_smartphone_ui.png" onclick="openLB(this)"><div class="caption"><div class="headline">今すぐスマホだけで始められる</div>V2: スマホ+診断UI可視化</div></div>
+<div class="banner-card"><img src="./H08/banners/H08_v3_relief_paycheck.png" onclick="openLB(this)"><div class="caption"><div class="headline">スクール代、いらない。</div>V3: 給料日の悩み→解放</div></div>
+</div>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-09 | かおり（29歳）マーケティング — 失敗しない第一歩</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> 不信感の受け皿（安心系）</span>
+<span><b>DNA:</b> BN-C UGC/口コミ風</span>
+<span><b>対比:</b> vs H-12（層間比較）</span>
+</div>
+<div class="hook-copy">「診断だから、失敗しようがない」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H09/banners/H09_v1_taikensya.png" onclick="openLB(this)"><div class="caption"><div class="headline">申込みページで3回やめた私が、やっと見つけた第一歩</div>V1: 体験者の声風</div></div>
+<div class="banner-card"><img src="./H09/banners/H09_v2_riskzero.png" onclick="openLB(this)"><div class="caption"><div class="headline">無料。1分。合わなかったらそれでいい。</div>V2: リスクゼロ安心訴求</div></div>
+<div class="banner-card"><img src="./H09/banners/H09_v3_social_proof.png" onclick="openLB(this)"><div class="caption"><div class="headline">迷ってる人ほど、まず診断してる</div>V3: 社会的証明</div></div>
+</div>
+</div>
+</div>
+
+<!-- 顕在層 -->
+<div class="tab-panel" id="tab-顕在">
+<div class="layer-summary">
+<h2>顕在層 — 「挫折した。でも諦められない」</h2>
+<p>スクール30万で挫折。情報商材で後悔。「もう騙されたくない」と身構えるけど、気になって広告を見てしまう。この層には「失敗したのは方法が合わなかっただけ。あなたは悪くない」と許しを与える。</p>
+<table>
+<tr><th>仮説</th><th>N1</th><th>コンセプト角度</th><th>フックタイプ</th><th>DNA骨格</th></tr>
+<tr><td>H-10</td><td>なつみ(33)</td><td>あなたは悪くない。方法が合わなかっただけ</td><td>BH2 疑問/問題提起</td><td>BN-E ライフスタイル</td></tr>
+<tr><td>H-11</td><td>えり(35)</td><td>アンチキラキラ。売りつけない診断</td><td>BH8 新常識提案</td><td>BN-G 常識否定</td></tr>
+<tr><td>H-12</td><td>みほ(36)</td><td>科学的アプローチ。7問でタイプ分析</td><td>BH1 数字衝撃</td><td>BN-A ヒーロー+数字</td></tr>
+</table>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-10 | なつみ（33歳）事務職 — 救済・許し</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> 感情的解放</span>
+<span><b>DNA:</b> BN-E ライフスタイル+オーバーレイ</span>
+<span><b>対比:</b> vs H-11（コンセプト比較）</span>
+</div>
+<div class="hook-copy">「副業で挫折した人へ。あなたが悪いんじゃない」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H10/banners/H10_v1_rescue_light.png" onclick="openLB(this)"><div class="caption"><div class="headline">副業で挫折した人へ。あなたが悪いんじゃない。</div>V1: 救済型ビジュアル</div></div>
+<div class="banner-card"><img src="./H10/banners/H10_v2_cause_shift.png" onclick="openLB(this)"><div class="caption"><div class="headline">失敗したのは、方法が合わなかっただけ。</div>V2: 原因転換テキスト型</div></div>
+<div class="banner-card"><img src="./H10/banners/H10_v3_diagnosis_hope.png" onclick="openLB(this)"><div class="caption"><div class="headline">今度こそ、自分に合った道を。</div>V3: 診断で見つかる希望</div></div>
+</div>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-11 | えり（35歳）事務職 — アンチキラキラ</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> 不信感の受け皿</span>
+<span><b>DNA:</b> BN-G 常識否定×数字衝撃</span>
+<span><b>対比:</b> vs H-10（コンセプト比較）</span>
+</div>
+<div class="hook-copy">「キラキラ起業に騙された全ての人へ」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H11/banners/H11-01_anti-kirakira-declaration.png" onclick="openLB(this)"><div class="caption"><div class="headline">これは起業塾でもスクールでもありません。</div>V1: アンチキラキラ宣言</div></div>
+<div class="banner-card"><img src="./H11/banners/H11-02_quiet-sincerity-minimal.png" onclick="openLB(this)"><div class="caption"><div class="headline">ただ、自分を知るだけ。</div>V2: 静かな誠実さ</div></div>
+<div class="banner-card"><img src="./H11/banners/H11-03_empathy-guard-release.png" onclick="openLB(this)"><div class="caption"><div class="headline">また騙されるのが怖い。その気持ち、分かります。</div>V3: 共感型</div></div>
+</div>
+</div>
+
+<div class="hypo-section">
+<div class="hypo-header">
+<h3>H-12 | みほ（36歳）事務職 — 科学的アプローチ</h3>
+<div class="info">
+<span><b>Only1 Gap:</b> スキル不要（データドリブン）</span>
+<span><b>DNA:</b> BN-A ヒーロープロダクト+数字フック</span>
+<span><b>対比:</b> vs H-09（層間比較）</span>
+</div>
+<div class="hook-copy">「7問で分かる。あなたの"稼ぎ方タイプ"」</div>
+</div>
+<div class="banner-grid">
+<div class="banner-card"><img src="./H12/banners/H12_v1_数字構造の信頼感.png" onclick="openLB(this)"><div class="caption"><div class="headline">7問で分かる。あなたの「稼ぎ方タイプ」</div>V1: 数字構造の信頼感</div></div>
+<div class="banner-card"><img src="./H12/banners/H12_v2_挫折共感_科学的解決.png" onclick="openLB(this)"><div class="caption"><div class="headline">全部試して、全部挫折した原因は"向き不向き"だった</div>V2: 挫折共感+科学的解決</div></div>
+<div class="banner-card"><img src="./H12/banners/H12_v3_3タイプ可視化.png" onclick="openLB(this)"><div class="caption"><div class="headline">あなたは3タイプのどれ？</div>V3: 3タイプ可視化</div></div>
+</div>
+</div>
+</div>
+
+<footer>
+<p>3je 私のまま稼ぐ診断 — Banner Portfolio | Generated by AIパク Agentic Orchestration</p>
+<p>4層 × 3仮説 × 3バナー = 36枚 | 12 Independent Agents | Gate-L1 ALL PASS | 2026-04-06</p>
+</footer>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="this.classList.remove('show')"><img id="lb-img"></div>
+</div>
+
+<script>
+// Simple password auth (SHA-256 hash)
+const HASH='a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3'; // hash of "123"
+async function sha256(m){const e=new TextEncoder().encode(m);const h=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function checkAuth(){const p=document.getElementById('pw').value;const h=await sha256(p);if(h===HASH){document.getElementById('auth-gate').style.display='none';document.getElementById('app').style.display='block';sessionStorage.setItem('3je-auth','1')}else{document.getElementById('auth-error').textContent='パスワードが違います'}}
+if(sessionStorage.getItem('3je-auth')==='1'){document.getElementById('auth-gate').style.display='none';document.getElementById('app').style.display='block'}
+// Tabs
+function showTab(layer){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+layer).classList.add('active');event.currentTarget.classList.add('active')}
+// Lightbox
+function openLB(img){const lb=document.getElementById('lightbox');document.getElementById('lb-img').src=img.src;lb.classList.add('show')}
+</script>
+</body>
+</html>
